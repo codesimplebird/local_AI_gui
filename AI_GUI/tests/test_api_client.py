@@ -68,7 +68,11 @@ class TestDeepSeekChat:
         """测试认证错误"""
         with patch('src.api_client.OpenAI') as mock_openai:
             mock_openai.return_value.chat.completions.create.side_effect = (
-                AuthenticationError("Invalid API key")
+                AuthenticationError(
+                    "Invalid API key",
+                    response=Mock(),
+                    body={},
+                )
             )
 
             chat = DeepSeekChat(mock_config)
@@ -94,7 +98,10 @@ class TestDeepSeekChat:
         """测试连接错误"""
         with patch('src.api_client.OpenAI') as mock_openai:
             mock_openai.return_value.chat.completions.create.side_effect = (
-                APIConnectionError("Connection failed", request=Mock())
+                APIConnectionError(
+                    message="Connection failed",
+                    request=Mock(),
+                )
             )
 
             chat = DeepSeekChat(mock_config)

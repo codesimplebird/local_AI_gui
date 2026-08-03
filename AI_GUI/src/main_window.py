@@ -20,9 +20,7 @@ if _proj_root not in sys.path:
 
 import json
 import time
-import html
 import logging
-import os
 import threading
 import tempfile
 from copy import deepcopy
@@ -117,6 +115,19 @@ class MyWindow_Stream(MyWindow_layout):
         self.thinking_active = False
         self.stream_done = False
         self.chunk_batch_size = 6
+
+    def closeEvent(self, event):
+        """关闭窗口时终止流式请求并等待线程退出，避免进程挂起"""
+        if self.streaming:
+            self.stop_stream()
+        thread = getattr(self, "QuestAIResponse", None)
+        if thread is not None and thread.isRunning():
+            thread.wait(2000)
+            if thread.isRunning():
+                # 网络阻塞时强制终止，避免进程无法退出
+                thread.terminate()
+                thread.wait(500)
+        event.accept()
 
     def init_config(self):
         """
@@ -426,9 +437,7 @@ class MyWindow_Stream(MyWindow_layout):
             # decode msg
             for obj in selected_item_info["messages"]:
                 if obj["role"] == "user":
-                    content = obj["content"].replace("\n", "\\n")
-                    content = html.escape(content, quote=True)
-                    self._post_message("user_msg", {"content": content})
+                    self._post_message("user_msg", {"content": obj["content"]})
 
                 elif obj["role"] == "assistant":
                     content = obj["content"]
@@ -560,10 +569,10 @@ class MyWindow_Stream(MyWindow_layout):
             self.streaming = False
             QMessageBox.information(self, "错误", answer)
             self.btn_send.setText("Send")
-            self.btn_send.setEnabled(False)
             self.list_widget.setEnabled(True)
             self.input_main.setReadOnly(False)
             self.input_main.setFocus()
+            self.checkLineEditState()
             return
         self.stream = answer
         self.stream_done = False
@@ -653,9 +662,7 @@ class MyWindow_Stream(MyWindow_layout):
         self._finishing = False
 
     def type_text(self, input_content):
-        content = input_content.replace("\n", "\\n")
-        content = html.escape(content, quote=True)
-        self._post_message("user_msg", {"content": content})
+        self._post_message("user_msg", {"content": input_content})
 
     def _post_message(self, msg_type: str, payload=None):
         """统一发送消息到 JS postMessage 分发器"""
@@ -707,6 +714,8 @@ class MyWindow_Stream(MyWindow_layout):
             self._apply_qt_theme(theme)
             self._post_message("set_theme", {"theme": theme})
             self._post_message("set_font_size", {"size": font_size})
+            # 刷新当前 AI 配置，使新配置立即生效（无需重启）
+            self.AI_sever_config = self.init_config()
         elif setExt == Settings_mode.Rejected:
             pass
 

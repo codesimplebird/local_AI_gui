@@ -74,6 +74,8 @@ class Settings_mode(QDialog):
         self.input_model.setPlaceholderText("Model")
         self.input_key = QLineEdit()
         self.input_key.setPlaceholderText("API Key")
+        self.input_key.setEchoMode(QLineEdit.Password)
+        self.input_key.setToolTip("API Key 仅保存到本地 config.json")
         self.input_url = QLineEdit()
         self.input_url.setPlaceholderText("Base URL")
 

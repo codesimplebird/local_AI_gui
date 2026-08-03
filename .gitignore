@@ -1,1 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# IDE
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 过期/遗留文件（已被 AI_GUI/assets/icon 替代）
+icon/
+read.md
 Core_Code/test.txt

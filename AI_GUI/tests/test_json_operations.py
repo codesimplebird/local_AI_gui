@@ -4,18 +4,11 @@ JSON 文件读写单元测试
 import pytest
 import json
 import os
-import tempfile
 from pathlib import Path
 
 
 class TestJSONOperations:
     """测试 JSON 文件操作"""
-
-    @pytest.fixture
-    def temp_dir(self):
-        """临时目录"""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            yield tmpdir
 
     @pytest.fixture
     def sample_chat_data(self):
@@ -39,9 +32,9 @@ class TestJSONOperations:
             ]
         }
 
-    def test_write_and_read_json(self, temp_dir, sample_chat_data):
+    def test_write_and_read_json(self, tmp_path, sample_chat_data):
         """测试 JSON 写入和读取"""
-        file_path = os.path.join(temp_dir, "test_chat.json")
+        file_path = os.path.join(tmp_path, "test_chat.json")
         
         # 写入
         with open(file_path, "w", encoding="utf-8") as f:
@@ -56,17 +49,17 @@ class TestJSONOperations:
         assert len(data["item"]) == 1
         assert data["item"][0]["chat_id"] == "test123"
 
-    def test_read_nonexistent_file(self, temp_dir):
+    def test_read_nonexistent_file(self, tmp_path):
         """测试读取不存在的文件"""
-        file_path = os.path.join(temp_dir, "nonexistent.json")
+        file_path = os.path.join(tmp_path, "nonexistent.json")
         
         with pytest.raises(FileNotFoundError):
             with open(file_path, "r", encoding="utf-8") as f:
                 json.load(f)
 
-    def test_read_invalid_json(self, temp_dir):
+    def test_read_invalid_json(self, tmp_path):
         """测试读取无效的 JSON"""
-        file_path = os.path.join(temp_dir, "invalid.json")
+        file_path = os.path.join(tmp_path, "invalid.json")
         
         # 写入无效的 JSON
         with open(file_path, "w", encoding="utf-8") as f:
@@ -77,9 +70,9 @@ class TestJSONOperations:
             with open(file_path, "r", encoding="utf-8") as f:
                 json.load(f)
 
-    def test_write_empty_chat_data(self, temp_dir):
+    def test_write_empty_chat_data(self, tmp_path):
         """测试写入空的聊天数据"""
-        file_path = os.path.join(temp_dir, "empty_chat.json")
+        file_path = os.path.join(tmp_path, "empty_chat.json")
         empty_data = {"item": []}
         
         with open(file_path, "w", encoding="utf-8") as f:
@@ -91,7 +84,7 @@ class TestJSONOperations:
         assert data == empty_data
         assert len(data["item"]) == 0
 
-    def test_unicode_content_preservation(self, temp_dir):
+    def test_unicode_content_preservation(self, tmp_path):
         """测试 Unicode 内容保留"""
         unicode_data = {
             "item": [
@@ -106,7 +99,7 @@ class TestJSONOperations:
             ]
         }
         
-        file_path = os.path.join(temp_dir, "unicode_chat.json")
+        file_path = os.path.join(tmp_path, "unicode_chat.json")
         
         with open(file_path, "w", encoding="utf-8") as f:
             json.dump(unicode_data, f, ensure_ascii=False, indent=4)
@@ -117,7 +110,7 @@ class TestJSONOperations:
         assert data["item"][0]["title"] == "中文标题"
         assert data["item"][0]["messages"][0]["content"] == "你好，世界！"
 
-    def test_large_chat_history(self, temp_dir):
+    def test_large_chat_history(self, tmp_path):
         """测试大型聊天历史"""
         large_data = {"item": []}
         
@@ -136,7 +129,7 @@ class TestJSONOperations:
             
             large_data["item"].append(chat)
         
-        file_path = os.path.join(temp_dir, "large_chat.json")
+        file_path = os.path.join(tmp_path, "large_chat.json")
         
         # 写入
         with open(file_path, "w", encoding="utf-8") as f:
@@ -151,10 +144,10 @@ class TestJSONOperations:
         assert len(data["item"][0]["messages"]) == 50
         assert data["item"][50]["chat_id"] == "chat_50"
 
-    def test_json_indentation_formatting(self, temp_dir):
+    def test_json_indentation_formatting(self, tmp_path):
         """测试 JSON 缩进格式"""
         data = {"item": [{"chat_id": "123", "title": "Test"}]}
-        file_path = os.path.join(temp_dir, "formatted.json")
+        file_path = os.path.join(tmp_path, "formatted.json")
         
         with open(file_path, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
@@ -167,9 +160,9 @@ class TestJSONOperations:
         assert "    " in content  # 4 空格缩进
         assert "\\n" not in content  # 不应该有转义的换行符
 
-    def test_append_messages(self, temp_dir):
+    def test_append_messages(self, tmp_path):
         """测试追加消息"""
-        file_path = os.path.join(temp_dir, "append_test.json")
+        file_path = os.path.join(tmp_path, "append_test.json")
         data = {
             "item": [
                 {
@@ -205,9 +198,9 @@ class TestJSONOperations:
         assert len(data["item"][0]["messages"]) == 3
         assert data["item"][0]["messages"][1]["content"] == "Response 1"
 
-    def test_concurrent_write_simulation(self, temp_dir):
+    def test_concurrent_write_simulation(self, tmp_path):
         """模拟并发写入（应该加锁）"""
-        file_path = os.path.join(temp_dir, "concurrent_test.json")
+        file_path = os.path.join(tmp_path, "concurrent_test.json")
         data = {"item": []}
         
         with open(file_path, "w", encoding="utf-8") as f:
@@ -251,9 +244,9 @@ class TestConfigFileOperations:
             }
         }
 
-    def test_config_read_write(self, temp_dir, sample_config):
+    def test_config_read_write(self, tmp_path, sample_config):
         """测试配置文件读写"""
-        file_path = os.path.join(temp_dir, "config.json")
+        file_path = os.path.join(tmp_path, "config.json")
         
         with open(file_path, "w", encoding="utf-8") as f:
             json.dump(sample_config, f, ensure_ascii=False, indent=4)
@@ -265,7 +258,7 @@ class TestConfigFileOperations:
         assert len(data["items"]) == 1
         assert data["select"]["default"] == "deepseek"
 
-    def test_config_with_multiple_apis(self, temp_dir):
+    def test_config_with_multiple_apis(self, tmp_path):
         """测试多 API 配置"""
         config = {
             "theme": "light",
@@ -276,7 +269,7 @@ class TestConfigFileOperations:
             "select": {"default": "api1"}
         }
         
-        file_path = os.path.join(temp_dir, "multi_config.json")
+        file_path = os.path.join(tmp_path, "multi_config.json")
         
         with open(file_path, "w", encoding="utf-8") as f:
             json.dump(config, f, ensure_ascii=False, indent=4)
