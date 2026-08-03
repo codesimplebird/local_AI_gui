@@ -1,0 +1,21 @@
+__pycache__/
+*.pyc
+
+# User-specific configuration and history
+data/config.json
+data/chat_history.json
+
+# Logs
+logs/
+test_log.txt
+
+# Dependencies
+node_modules/
+
+# IDE
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db

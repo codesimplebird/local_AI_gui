@@ -1,0 +1,15 @@
+{
+    "theme": "dark",
+    "font_size": "medium",
+    "items": [
+        {
+            "name": "deepseek",
+            "model": "deepseek-chat",
+            "api_key": "sk-YOUR_API_KEY_HERE",
+            "base_url": "https://api.deepseek.com"
+        }
+    ],
+    "select": {
+        "default": "deepseek"
+    }
+}
